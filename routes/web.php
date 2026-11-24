@@ -18,16 +18,5 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-    Route::apiResource('categories', \App\Http\Controllers\CategoryController::class);
-
-    Route::apiResource('services', \App\Http\Controllers\ServiceController::class);
-
-    Route::apiResource('produits', \App\Http\Controllers\ProduitController::class);
-
-    Route::apiResource('element-commandes', \App\Http\Controllers\ElementCommandeController::class);
-
-    Route::apiResource('posts', \App\Http\Controllers\PostController::class);
-
-    Route::apiResource('commandes', \App\Http\Controllers\CommandeController::class);
 
 require __DIR__.'/auth.php';

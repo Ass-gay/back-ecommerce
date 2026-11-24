@@ -17,7 +17,7 @@ class StoreProduitRequest extends FormRequest
         return [
         'libelle' => 'required|string|max:90',
         'description' => 'required|string|max:65535',
-        'image' => 'required|string|max:255',
+        'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // Accepte les vrais fichiers images
         'prix' => 'required|integer',
         'categorie_id' => 'required|integer|exists:categories,id',
     ];

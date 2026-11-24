@@ -18,14 +18,34 @@ class PostController extends Controller
     public function index(Request $request): JsonResponse
     {
         $perPage = (int) ($request->integer('per_page') ?: 15);
+        // L'index reste identique pour faciliter la pagination de la collection
         return response()->json(new PostCollection($this->repository->paginate($perPage)));
     }
 
     public function store(StorePostRequest $request): JsonResponse
     {
-        $item = $this->repository->create($request->validated());
-        return response()->json(new PostResource($item), 201);
+        // 1. On récupère les données validées du formulaire
+        $data = $request->validated();
+
+        // 2. On vérifie si un fichier image est présent dans la requête
+        if ($request->hasFile('image')) {
+            // Déplace physiquement le fichier de C:\xampp\tmp vers votre dossier public (storage/app/public/posts)
+            $path = $request->file('image')->store('posts', 'public');
+
+            // Remplace le chemin temporaire par l'URL publique accessible par Angular
+            // Exemple généré : "http://127.0.0"
+            $data['image'] = asset('storage/' . $path);
+        }
+
+        // 3. On envoie les données corrigées au Repository
+        $item = $this->repository->create($data);
+
+        return response()->json([
+            'message' => 'Félicitations, votre post a été créé avec succès !',
+            'data' => new PostResource($item)
+        ], 201);
     }
+
 
     public function show(int|string $post): JsonResponse
     {
@@ -34,13 +54,28 @@ class PostController extends Controller
 
     public function update(UpdatePostRequest $request, int|string $post): JsonResponse
     {
-        $item = $this->repository->update($post, $request->validated());
-        return response()->json(new PostResource($item));
+        $data = $request->validated();
+
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('posts', 'public');
+            $data['image'] = asset('storage/' . $path);
+        }
+
+        $item = $this->repository->update($post, $data);
+
+        return response()->json([
+            'message' => 'Le post a été mis à jour avec succès !',
+            'data' => new PostResource($item)
+        ]);
     }
+
 
     public function destroy(int|string $post): JsonResponse
     {
         $this->repository->delete($post);
-        return response()->json(null, 204);
+        // On passe d'un code 204 (vide) à un code 200 pour pouvoir envoyer du JSON
+        return response()->json([
+            'message' => 'Le post a été définitivement supprimé du serveur.'
+        ], 200);
     }
 }
